@@ -5,6 +5,19 @@ import { uploadOnCloudinary } from "../utils/cloudnary.js";
 import { Apiresponse } from "../utils/ApiResponse.js";
 import mongoose from "mongoose";
 
+const generateAccessTokenAndRefreshToken = async (userId)=>{
+    try {
+        const user = await User.findOne(userId)
+        const RefreshToken = await user.generateRefreshToken()
+        const AccessToken = await user.generateAccessToken()
+        user.refreshToken = RefreshToken
+        return {AccessToken,RefreshToken}
+        await user.save({validateBeforeSave: false})
+    } catch (error) {
+        throw new Apierror(500,"Something Went Wrong While generating Refresh and Access Token")
+    }
+}
+
 const registerUser = asyncHandler( async (req,res)=> {
   
     const {fullname,email,username,password} = req.body
@@ -64,4 +77,36 @@ const registerUser = asyncHandler( async (req,res)=> {
 
 })
 
-export {registerUser}
+const loginUser = asyncHandler(
+    async (req,res) => {
+        const {email,username,password} = req.body
+
+        if (!username || !email)
+            {
+                throw new Apierror(400,"Username Or Email Is Required");
+            }
+
+       const user= await User.findOne({
+            $or: [{username},{email}]
+         })
+
+         if(!user)
+             {
+                throw new Apierror(404,"User Does Not Exist")
+             }
+             const isPasswordValid = user.isPasswordCorrect(password)
+
+             if(!isPasswordValid)
+                {
+                   throw new Apierror(400,"PassWord is Not Correct");
+
+                }
+               const {AccessToken,RefreshToken} = await generateAccessTokenAndRefreshToken(user._id)
+
+               const loggedInUser = await User.findOne(user._id).select("-password -refreshToken")
+
+
+    }
+)
+
+export {registerUser,loginUser}
