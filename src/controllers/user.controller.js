@@ -9,8 +9,10 @@ const generateAccessTokenAndRefreshToken = async (userId)=>{
     try {
         const user = await User.findOne(userId)
         const refreshToken = await user.generateRefreshToken()
+        // console.log(refreshToken)
         const accessToken = await user.generateAccessToken()
         user.refreshToken = refreshToken
+        
         await user.save({validateBeforeSave: false})
         return {accessToken,refreshToken}
         
@@ -44,7 +46,7 @@ const registerUser = asyncHandler( async (req,res)=> {
     let coverImageLocalPath
     if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length >0)
         {
-            coverImageLocalPath= req.file.coverImage[0].path
+            coverImageLocalPath= req.file?.coverImage[0].path || ""
         }
 
      if(!AvatarLocalPath)
@@ -82,7 +84,7 @@ const loginUser = asyncHandler(
     async (req,res) => {
         const {email,username,password} = req.body
 
-        if (!username || !email)
+        if (!username && !email)
             {
                 throw new Apierror(400,"Username Or Email Is Required");
             }
