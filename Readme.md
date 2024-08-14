@@ -36,7 +36,7 @@ This is the backend server for the VideoTube application, a platform for uploadi
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/rythm-sachdeva/backendpro.git
-   cd videotube-backend
+   cd backendpro
    ```
 
 2. **Install dependencies**:
